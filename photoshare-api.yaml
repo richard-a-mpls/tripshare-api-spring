@@ -1,0 +1,99 @@
+openapi: "3.0.2"
+info:
+  title: API Title
+  version: "1.0"
+servers:
+  - url: http://localhost:8080/v1
+paths:
+  /authorize:
+    description: "authorize based on identity token"
+    post:
+      tags:
+        - "authorize"
+      summary: "authorize a session for token"
+      description: "authorize based on a centralized token"
+      operationId: "authorize"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorizationResponse"
+
+  /projects:
+    description: "published project related calls"
+    get:
+      tags:
+        - "published_project"
+      summary: "get published projects"
+      operationId: "getProjects"
+      security:
+        - OptionalBearerAuth: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Project"
+
+components:
+  schemas:
+    AuthorizationRequest:
+      type: object
+      required:
+        - identity_token
+      properties:
+        identity_token:
+          type: "string"
+
+    AuthorizationResponse:
+      type: object
+      properties:
+        api_token:
+          type: "string"
+
+    Project:
+      type: object
+      properties:
+        _id:
+          type: "string"
+        profile_id:
+          type: "string"
+        summary:
+          type: "string"
+        description:
+          type: "string"
+        location:
+          type: "string"
+        published:
+          type: "boolean"
+        showcase_photo_id:
+          type: "string"
+        photo_array:
+          type: array
+          items:
+            type: "string"
+        datestmp:
+          type: "string"
+        share_with:
+          type: "string"
+          enum:
+            - "private"
+            - "public"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - BearerAuth: []
