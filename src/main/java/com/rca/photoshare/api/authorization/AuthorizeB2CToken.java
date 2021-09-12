@@ -17,7 +17,10 @@ import java.util.Base64;
 @Component
 public class AuthorizeB2CToken implements AuthorizeToken {
 
+    String ISSUER = "tb-authz-b2c";
     String AUDIENCE_ENV = "B2C_AUDIENCE";
+    String JWK_URL = "JWK_URL";
+    long TOKEN_TTL = 1000*60*60*12;
 
     public String authorizeToken(String token) throws Exception {
         DecodedJWT decodedJWT = verifyJwtSignature(token);
@@ -26,15 +29,14 @@ public class AuthorizeB2CToken implements AuthorizeToken {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         TokenModelB2C tokenModel = mapper.readValue(jwtPayload, TokenModelB2C.class);
-        if (!verifyJwtAttributes(tokenModel)) {
-            throw new Exception("Could not verify token attributes");
-        }
-        return null;
+        verifyJwtAttributes(tokenModel);
+
+        return JwtTokenUtil.createJWT(ISSUER, tokenModel.getSubject(), TOKEN_TTL);
     }
 
     public DecodedJWT verifyJwtSignature(String sourceJwt) throws Exception {
         DecodedJWT decodedJWT = JWT.decode(sourceJwt);
-        URL jwkUrl = new URL("https://rcaazdemo.b2clogin.com/rcaazdemo.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1_susi");
+        URL jwkUrl = new URL(System.getenv(JWK_URL));
         JwkProvider provider = new UrlJwkProvider(jwkUrl);
         Jwk jwk = provider.get(decodedJWT.getKeyId());
         Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
@@ -42,16 +44,17 @@ public class AuthorizeB2CToken implements AuthorizeToken {
         return decodedJWT;
     }
 
-    public boolean verifyJwtAttributes(TokenModelB2C tokenModel) {
+    public void verifyJwtAttributes(TokenModelB2C tokenModel) throws Exception {
         long currentTime = System.currentTimeMillis();
         if (tokenModel.getNotBefore() > currentTime) {
             System.out.println("issuing time failure");
-            return false;
+            throw new Exception("Not Before validation failed");
+        }
+        if (tokenModel.getExpires() < currentTime) {
+            throw new Exception("Token Expiration validation failed");
         }
         if (!System.getenv(AUDIENCE_ENV).equals(tokenModel.getAudience())) {
-            System.out.println("wrong issuer");
-            return false;
+            throw new Exception("Issuer validation failed");
         }
-        return true;
     }
 }

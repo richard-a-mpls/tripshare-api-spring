@@ -61,6 +61,8 @@ components:
       properties:
         api_token:
           type: "string"
+        message:
+          type: "string"
 
     Project:
       type: object
