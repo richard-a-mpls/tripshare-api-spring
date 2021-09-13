@@ -2,7 +2,7 @@ package com.rca.photoshare.api.authorization;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class TokenModelB2C {
+public class TokenModel {
     @JsonProperty("iss")
     private String issuer;
 
