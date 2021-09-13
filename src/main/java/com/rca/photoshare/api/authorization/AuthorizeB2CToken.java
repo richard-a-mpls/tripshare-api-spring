@@ -17,21 +17,19 @@ import java.util.Base64;
 @Component
 public class AuthorizeB2CToken implements AuthorizeToken {
 
-    String ISSUER = "tb-authz-b2c";
     String AUDIENCE_ENV = "B2C_AUDIENCE";
     String JWK_URL = "JWK_URL";
-    long TOKEN_TTL = 1000*60*60*12;
 
-    public String authorizeToken(String token) throws Exception {
+    public TokenModel authorizeToken(String token) throws Exception {
         DecodedJWT decodedJWT = verifyJwtSignature(token);
         String jwtPayload = new String(Base64.getDecoder().decode(decodedJWT.getPayload()));
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        TokenModelB2C tokenModel = mapper.readValue(jwtPayload, TokenModelB2C.class);
+        TokenModel tokenModel = mapper.readValue(jwtPayload, TokenModel.class);
         verifyJwtAttributes(tokenModel);
 
-        return JwtTokenUtil.createJWT(ISSUER, tokenModel.getSubject(), TOKEN_TTL);
+        return tokenModel;
     }
 
     public DecodedJWT verifyJwtSignature(String sourceJwt) throws Exception {
@@ -44,13 +42,14 @@ public class AuthorizeB2CToken implements AuthorizeToken {
         return decodedJWT;
     }
 
-    public void verifyJwtAttributes(TokenModelB2C tokenModel) throws Exception {
-        long currentTime = System.currentTimeMillis();
+    public void verifyJwtAttributes(TokenModel tokenModel) throws Exception {
+        long currentTime = System.currentTimeMillis()/1000;
         if (tokenModel.getNotBefore() > currentTime) {
-            System.out.println("issuing time failure");
             throw new Exception("Not Before validation failed");
         }
         if (tokenModel.getExpires() < currentTime) {
+            System.out.println(tokenModel.getExpires());
+            System.out.println(currentTime);
             throw new Exception("Token Expiration validation failed");
         }
         if (!System.getenv(AUDIENCE_ENV).equals(tokenModel.getAudience())) {

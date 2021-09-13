@@ -5,28 +5,6 @@ info:
 servers:
   - url: http://localhost:8080/v1
 paths:
-  /authorize:
-    description: "authorize based on identity token"
-    post:
-      tags:
-        - "authorize"
-      summary: "authorize a session for token"
-      description: "authorize based on a centralized token"
-      operationId: "authorize"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthorizationRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthorizationResponse"
-
   /projects:
     description: "published project related calls"
     get:
@@ -48,22 +26,6 @@ paths:
 
 components:
   schemas:
-    AuthorizationRequest:
-      type: object
-      required:
-        - identity_token
-      properties:
-        identity_token:
-          type: "string"
-
-    AuthorizationResponse:
-      type: object
-      properties:
-        api_token:
-          type: "string"
-        message:
-          type: "string"
-
     Project:
       type: object
       properties:
