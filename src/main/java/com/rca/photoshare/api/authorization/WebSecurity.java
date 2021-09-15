@@ -2,6 +2,7 @@ package com.rca.photoshare.api.authorization;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -44,6 +45,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         CorsConfiguration corsConfiguration = new CorsConfiguration().applyPermitDefaultValues();
+        corsConfiguration.addAllowedMethod(HttpMethod.PATCH);
         source.registerCorsConfiguration("/**", corsConfiguration);
 
         return source;
