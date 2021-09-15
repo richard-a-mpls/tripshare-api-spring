@@ -146,6 +146,23 @@ components:
           enum:
             - "private"
             - "public"
+    Profile:
+      type: object
+      properties:
+        _id:
+          type: "string"
+        profile_name:
+          type: "string"
+        identity_issuer:
+          type: "string"
+        identity_id:
+          type: "string"
+        profile_img:
+          type: "string"
+        connections:
+          type: "array"
+          items:
+            type: "string"
 
   securitySchemes:
     BearerAuth:
