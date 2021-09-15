@@ -40,7 +40,6 @@ public class MeApiDelegateImpl implements MeApiDelegate {
 
         project.setProfileId(profileTemplate.lookupAuthenticatedProfile(authentication).getId());
         project.setPublished(false);
-        project.setShareWith(Project.ShareWithEnum.PRIVATE);
         project.setPhotoArray(new ArrayList<>());
         if (project.getDatestmp() == null) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -61,11 +60,9 @@ public class MeApiDelegateImpl implements MeApiDelegate {
 
     @Override
     public ResponseEntity<Project> getSessionProjectById(String projectId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
-            if (!foundProject.get().getProfileId().equals(profileId)) {
+            if (!validateProfileId(foundProject.get().getProfileId())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
             return ResponseEntity.ok(foundProject.get());
@@ -76,11 +73,9 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Override
     public ResponseEntity<Project> patchProject(String projectId, Project project) {
         System.out.println("Patch Project");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
-            if (!foundProject.get().getProfileId().equals(profileId)) {
+            if (!validateProfileId(foundProject.get().getProfileId())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
 
@@ -110,4 +105,22 @@ public class MeApiDelegateImpl implements MeApiDelegate {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
+    @Override
+    public ResponseEntity<Void> deleteProject(String projectId) {
+        Optional<Project> deleteProject = projectsRepository.findById(projectId);
+        if (deleteProject.isPresent()) {
+            if (validateProfileId(deleteProject.get().getProfileId())) {
+                projectsRepository.delete(deleteProject.get());
+                return ResponseEntity.ok(null);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    private boolean validateProfileId(String profileId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String lookedUpProfileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
+        return profileId.equals(lookedUpProfileId);
+    }
 }
