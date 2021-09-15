@@ -12,8 +12,6 @@ paths:
         - "published_project"
       summary: "get published projects"
       operationId: "getProjects"
-      security:
-        - OptionalBearerAuth: [ ]
       responses:
         '200':
           description: OK
@@ -23,6 +21,100 @@ paths:
                 type: "array"
                 items:
                   $ref: "#/components/schemas/Project"
+
+  /me/projects:
+    description: "project related calls"
+    post:
+      tags:
+        - "project"
+      summary: "create a project"
+      description: "create a project"
+      operationId: "addProject"
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+    get:
+      tags:
+        - "project"
+      summary: "get a project based on authorized session"
+      operationId: "getSessionProjects"
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Project"
+
+
+  /me/projects/{project_id}:
+    description: "project related calls"
+    get:
+      tags:
+        - "project"
+      summary: "get a project from project id"
+      operationId: "getSessionProjectById"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "project_id"
+          in: "path"
+          description: "ID of project to return"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    patch:
+      tags:
+        - "project"
+      summary: "update attributes of a project"
+      operationId: "patchProject"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "project_id"
+          in: "path"
+          description: "ID of project to patch"
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
 
 components:
   schemas:
