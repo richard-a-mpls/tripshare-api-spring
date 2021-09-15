@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ProjectRepository extends MongoRepository<Project, String> {
     List<Project> findByProfileId(String profileId);
-    List<Project> findByPublished(boolean published);
+    // TODO, should be able to use boolean but string is currently stored in mongo
+    List<Project> findByPublished(String published);
 }
