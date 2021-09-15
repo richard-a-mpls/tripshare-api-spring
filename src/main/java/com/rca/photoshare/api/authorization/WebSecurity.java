@@ -20,12 +20,19 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and().authorizeRequests()
+                .cors()
+                .and()
+                    .authorizeRequests()
+                .antMatchers("/v1/projects").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthorizationFilter(), BasicAuthenticationFilter.class)
                 // this disables session creation on Spring Security
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        if ("yes".equals(System.getenv("DISABLE_CSRF"))) {
+            // added this in so i can test with postman.
+            http.csrf().disable();
+        }
     }
 
     private JWTAuthorizationFilter jwtAuthorizationFilter() {
