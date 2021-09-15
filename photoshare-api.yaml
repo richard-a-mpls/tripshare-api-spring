@@ -114,6 +114,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Project"
+    delete:
+      tags:
+        - "project"
+      summary: "delete a project by id"
+      description: "delete that project"
+      operationId: "deleteProject"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "project_id"
+          in: "path"
+          description: "ID of project to delete"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
 
 
 components:
@@ -141,11 +159,6 @@ components:
             type: "string"
         datestmp:
           type: "string"
-        share_with:
-          type: "string"
-          enum:
-            - "private"
-            - "public"
     Profile:
       type: object
       properties:
