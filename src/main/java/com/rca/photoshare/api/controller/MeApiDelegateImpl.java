@@ -3,7 +3,7 @@ package com.rca.photoshare.api.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rca.photoshare.api.MeApiDelegate;
-import com.rca.photoshare.api.authorization.TokenModel;
+import com.rca.photoshare.api.database.ProfileTemplate;
 import com.rca.photoshare.api.database.ProjectRepository;
 import com.rca.photoshare.api.model.Project;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +31,14 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @Autowired
+    ProfileTemplate profileTemplate;
+
     @Override
     public ResponseEntity<Project> addProject(Project project) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = ((TokenModel)authentication.getPrincipal()).getSubject();
-        project.setProfileId(profileId);
 
+        project.setProfileId(profileTemplate.lookupAuthenticatedProfile(authentication).getId());
         project.setPublished(false);
         project.setShareWith(Project.ShareWithEnum.PRIVATE);
         project.setPhotoArray(new ArrayList<>());
@@ -52,7 +54,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Override
     public ResponseEntity<List<Project>> getSessionProjects() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = ((TokenModel)authentication.getPrincipal()).getSubject();
+        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
         List<Project> projectList = projectsRepository.findByProfileId(profileId);
         return ResponseEntity.ok(projectList);
     }
@@ -60,7 +62,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Override
     public ResponseEntity<Project> getSessionProjectById(String projectId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = ((TokenModel)authentication.getPrincipal()).getSubject();
+        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
             if (!foundProject.get().getProfileId().equals(profileId)) {
@@ -75,7 +77,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     public ResponseEntity<Project> patchProject(String projectId, Project project) {
         System.out.println("Patch Project");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = ((TokenModel)authentication.getPrincipal()).getSubject();
+        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
             if (!foundProject.get().getProfileId().equals(profileId)) {
