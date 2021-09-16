@@ -3,7 +3,7 @@ package com.rca.photoshare.api.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rca.photoshare.api.MeApiDelegate;
-import com.rca.photoshare.api.database.ProfileTemplate;
+import com.rca.photoshare.api.authorization.TokenModel;
 import com.rca.photoshare.api.database.ProjectRepository;
 import com.rca.photoshare.api.model.Project;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +31,9 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Autowired
     MongoTemplate mongoTemplate;
 
-    @Autowired
-    ProfileTemplate profileTemplate;
-
     @Override
     public ResponseEntity<Project> addProject(Project project) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        project.setProfileId(profileTemplate.lookupAuthenticatedProfile(authentication).getId());
+        project.setProfileId(getAuthenticatedProfileId());
         project.setPublished(false);
         project.setPhotoArray(new ArrayList<>());
         if (project.getDatestmp() == null) {
@@ -53,8 +48,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     @Override
     public ResponseEntity<List<Project>> getSessionProjects() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String profileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
-        List<Project> projectList = projectsRepository.findByProfileId(profileId);
+        List<Project> projectList = projectsRepository.findByProfileId(getAuthenticatedProfileId());
         return ResponseEntity.ok(projectList);
     }
 
@@ -62,7 +56,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     public ResponseEntity<Project> getSessionProjectById(String projectId) {
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
-            if (!validateProfileId(foundProject.get().getProfileId())) {
+            if (!verifyProfileId(foundProject.get().getProfileId())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
             return ResponseEntity.ok(foundProject.get());
@@ -75,7 +69,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
         System.out.println("Patch Project");
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
-            if (!validateProfileId(foundProject.get().getProfileId())) {
+            if (!verifyProfileId(foundProject.get().getProfileId())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
 
@@ -109,7 +103,7 @@ public class MeApiDelegateImpl implements MeApiDelegate {
     public ResponseEntity<Void> deleteProject(String projectId) {
         Optional<Project> deleteProject = projectsRepository.findById(projectId);
         if (deleteProject.isPresent()) {
-            if (validateProfileId(deleteProject.get().getProfileId())) {
+            if (verifyProfileId(deleteProject.get().getProfileId())) {
                 projectsRepository.delete(deleteProject.get());
                 return ResponseEntity.ok(null);
             }
@@ -118,9 +112,12 @@ public class MeApiDelegateImpl implements MeApiDelegate {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
 
-    private boolean validateProfileId(String profileId) {
+    private boolean verifyProfileId(String profileId) {
+        return profileId.equals(getAuthenticatedProfileId());
+    }
+
+    private String getAuthenticatedProfileId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String lookedUpProfileId = profileTemplate.lookupAuthenticatedProfile(authentication).getId();
-        return profileId.equals(lookedUpProfileId);
+        return ((TokenModel) authentication.getPrincipal()).getSubject();
     }
 }
