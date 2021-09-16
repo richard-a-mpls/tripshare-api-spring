@@ -66,7 +66,6 @@ public class MeApiDelegateImpl implements MeApiDelegate {
 
     @Override
     public ResponseEntity<Project> patchProject(String projectId, Project project) {
-        System.out.println("Patch Project");
         Optional<Project> foundProject = projectsRepository.findById(projectId);
         if (foundProject.isPresent()) {
             if (!verifyProfileId(foundProject.get().getProfileId())) {
@@ -84,7 +83,6 @@ public class MeApiDelegateImpl implements MeApiDelegate {
                 Entry<String, JsonNode> entry = iterator.next();
                 if (!entry.getValue().isNull()) {
                     update.set(entry.getKey(), entry.getValue().asText());
-                    System.out.println("Set: " + entry.getKey() + ":" + entry.getValue().asText());
                 }
             }
             Query query = new Query();
