@@ -16,7 +16,7 @@ public class ProjectsApiDelegateImpl implements ProjectsApiDelegate {
 
     @Override
     public ResponseEntity<List<com.rca.photoshare.api.model.Project>> getProjects() {
-        List<Project> projectsList = projectsRepository.findByPublished("true");
+        List<Project> projectsList = projectsRepository.getPublicProjects();
         return ResponseEntity.ok(projectsList);
     }
 
