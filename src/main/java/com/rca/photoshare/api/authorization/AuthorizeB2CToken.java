@@ -53,8 +53,6 @@ public class AuthorizeB2CToken implements AuthorizeToken {
             throw new Exception("Not Before validation failed");
         }
         if (tokenModel.getExpires() < currentTime) {
-            System.out.println(tokenModel.getExpires());
-            System.out.println(currentTime);
             throw new Exception("Token Expiration validation failed");
         }
         if (!systemConfig.getConfiguration(AUDIENCE_ENV).equals(tokenModel.getAudience())) {
