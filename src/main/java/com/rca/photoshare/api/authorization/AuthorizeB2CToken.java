@@ -8,6 +8,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rca.photoshare.api.utility.SystemConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
@@ -16,6 +18,9 @@ import java.util.Base64;
 
 @Component
 public class AuthorizeB2CToken implements AuthorizeToken {
+
+    @Autowired
+    SystemConfig systemConfig;
 
     String AUDIENCE_ENV = "B2C_AUDIENCE";
     String JWK_URL = "JWK_URL";
@@ -52,8 +57,8 @@ public class AuthorizeB2CToken implements AuthorizeToken {
             System.out.println(currentTime);
             throw new Exception("Token Expiration validation failed");
         }
-        if (!System.getenv(AUDIENCE_ENV).equals(tokenModel.getAudience())) {
-            throw new Exception("Issuer validation failed");
+        if (!systemConfig.getConfiguration(AUDIENCE_ENV).equals(tokenModel.getAudience())) {
+            throw new Exception("Audience validation failed");
         }
     }
 }
