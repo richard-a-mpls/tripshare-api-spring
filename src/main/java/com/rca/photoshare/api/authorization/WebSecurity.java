@@ -15,9 +15,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private AuthorizeToken authorizeToken;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -37,7 +34,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     private JWTAuthorizationFilter jwtAuthorizationFilter() {
-        return new JWTAuthorizationFilter(authorizeToken);
+        return new JWTAuthorizationFilter();
     }
 
     @Bean

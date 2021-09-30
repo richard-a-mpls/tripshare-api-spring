@@ -1,7 +1,9 @@
 package com.rca.photoshare.api.authorization;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenModel {
     @JsonProperty("iss")
     private String issuer;
