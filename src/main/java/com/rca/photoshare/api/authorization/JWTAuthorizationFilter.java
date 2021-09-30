@@ -1,8 +1,11 @@
 package com.rca.photoshare.api.authorization;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -16,12 +19,6 @@ public class JWTAuthorizationFilter extends GenericFilterBean {
     String HEADER_STRING = "Authorization";
     String TOKEN_PREFIX = "Bearer ";
 
-    AuthorizeToken authorizeToken;
-
-    public JWTAuthorizationFilter(AuthorizeToken authorizeToken) {
-        this.authorizeToken = authorizeToken;
-    }
-
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
@@ -33,7 +30,9 @@ public class JWTAuthorizationFilter extends GenericFilterBean {
 
         UsernamePasswordAuthenticationToken authentication = getAuthentication((HttpServletRequest) servletRequest);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (authentication != null) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
@@ -43,10 +42,22 @@ public class JWTAuthorizationFilter extends GenericFilterBean {
         if (token != null) {
             try {
                 String jwt = token.replace(TOKEN_PREFIX, "");
-                TokenModel tokenModel = authorizeToken.authorizeToken(jwt);
-                return new UsernamePasswordAuthenticationToken(tokenModel, null, new ArrayList<>());
+                WebClient webClient = WebClient.create();
+                ResponseEntity<TokenModel> tokenModelResponseEntity = webClient.get()
+                        .uri(System.getenv("JWT_VERIFY_ENDPOINT"))
+                        .header("Authorization", "Basic " + System.getenv("JWT_VERIFY_AUTH"))
+                        .header("ContentType", "application/json")
+                        .header("tokenJwt", jwt)
+                        .retrieve()
+                        .toEntity(TokenModel.class)
+                        .block();
+
+                if (HttpStatus.OK.equals(tokenModelResponseEntity.getStatusCode())) {
+                    TokenModel tokenModel = tokenModelResponseEntity.getBody();
+                    return new UsernamePasswordAuthenticationToken(tokenModel, null, new ArrayList<>());
+                }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                logger.info(e.getMessage());
             }
         }
         return null;
