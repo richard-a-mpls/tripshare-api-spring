@@ -52,7 +52,8 @@ public class JWTAuthorizationFilter extends GenericFilterBean {
                         .toEntity(TokenModel.class)
                         .block();
 
-                if (HttpStatus.OK.equals(tokenModelResponseEntity.getStatusCode())) {
+                if (tokenModelResponseEntity != null &&
+                        HttpStatus.OK.equals(tokenModelResponseEntity.getStatusCode())) {
                     TokenModel tokenModel = tokenModelResponseEntity.getBody();
                     return new UsernamePasswordAuthenticationToken(tokenModel, null, new ArrayList<>());
                 }

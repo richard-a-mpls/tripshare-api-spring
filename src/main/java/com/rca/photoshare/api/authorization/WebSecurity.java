@@ -1,6 +1,5 @@
 package com.rca.photoshare.api.authorization;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,10 +24,9 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthorizationFilter(), BasicAuthenticationFilter.class)
-                // this disables session creation on Spring Security
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         if ("yes".equals(System.getenv("DISABLE_CSRF"))) {
-            // added this in so i can test with postman.
+            // added this in so I can test with postman.
             http.csrf().disable();
         }
     }
