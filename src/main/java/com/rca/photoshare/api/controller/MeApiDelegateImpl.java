@@ -47,7 +47,6 @@ public class MeApiDelegateImpl implements MeApiDelegate {
 
     @Override
     public ResponseEntity<List<Project>> getSessionProjects() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<Project> projectList = projectsRepository.findByProfileId(getAuthenticatedProfileId());
         return ResponseEntity.ok(projectList);
     }
@@ -73,8 +72,8 @@ public class MeApiDelegateImpl implements MeApiDelegate {
             }
 
             // I would have thought there would be a better way to do a partial document update but seemingly
-            // without this extra work, any fileds not provided get nulled.  will keep an eye out for
-            // better alternatives, if none, this code can be genericized and moved somewhere common for reuse.
+            // without this extra work, any fields not provided get set to null.  will keep an eye out for
+            // better alternatives, if none, this code can be made generic and moved somewhere common for reuse.
             Update update = new Update();
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.convertValue(project, JsonNode.class);
