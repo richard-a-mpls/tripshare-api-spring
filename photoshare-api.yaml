@@ -132,6 +132,17 @@ paths:
       responses:
         '200':
           description: OK
+  /wakeup:
+    description: wake up the service
+    get:
+      tags:
+        - "wakeup"
+      summary: "wakeup the service"
+      description: "this service needs to be woken up periodically to start running"
+      operationId: "wakeup"
+      responses:
+        '200':
+          description: OK
 
 
 components:
