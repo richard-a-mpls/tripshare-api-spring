@@ -21,6 +21,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .and()
                     .authorizeRequests()
                 .antMatchers("/v1/projects").permitAll()
+                .antMatchers("/v1/wakeup").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthorizationFilter(), BasicAuthenticationFilter.class)
