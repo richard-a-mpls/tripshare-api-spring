@@ -6,7 +6,7 @@ metadata:
     app: tripshare-api-spring
     tier: backend
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: tripshare-api-spring
