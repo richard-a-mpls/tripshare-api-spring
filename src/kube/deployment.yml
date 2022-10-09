@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripshare-api-spring
+  labels:
+    app: tripshare-api-spring
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tripshare-api-spring
+  template:
+    metadata:
+      labels:
+        app: tripshare-api-spring
+        tier: backend
+    spec:
+      containers:
+        - name: tripshare-api-spring
+          image: 121441139723.dkr.ecr.us-east-1.amazonaws.com/tb-ecr-repo:89b42f8460ee714fab31d9382553a66f3f051aaf
+          ports:
+            - containerPort: 8080
