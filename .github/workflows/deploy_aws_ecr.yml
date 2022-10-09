@@ -12,7 +12,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
 
@@ -36,15 +35,11 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_KEY }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET }}
-        aws-region: us-east-2
+        aws-region: us-east-1
 
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-#      with:
-#        aws-access-key-id: ${{ secrets.AWS_KEY }}
-#        aws-secret-access-key: ${{ secrets.AWS_SECRET }}
-#        aws-region: us-east-2
 
     - name: Build, tag, and push docker image to Amazon ECR
       env:
@@ -55,11 +50,35 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-#    - name: Deploy to Azure Web App
-#      id: deploy-to-webapp
-#      uses: azure/webapps-deploy@v2
-#      with:
-#        app-name: 'tripblogger-api-spring'
-#        slot-name: 'production'
-#        publish-profile: ${{ secrets.AzureAppService_PublishProfile_7b1da8386af541de8987e643fd6a6f90 }}
-#        package: '*.jar'
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install and verify eksctl cli
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          mv /tmp/eksctl /usr/local/bin
+
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: update kubectl config
+        run: aws eks update-kubeconfig --name eksdemo1 --region us-east-1
+
+      - name: update deployment
+        run: kubectl apply -f src/kube/deployment.yml
+
+      - name: update service
+        run: kubectl apply -f src/kube/service.yml
