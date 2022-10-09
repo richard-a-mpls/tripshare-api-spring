@@ -18,6 +18,6 @@ spec:
     spec:
       containers:
         - name: tripshare-api-spring
-          image: 121441139723.dkr.ecr.us-east-1.amazonaws.com/tb-ecr-repo:89b42f8460ee714fab31d9382553a66f3f051aaf
+          image: 121441139723.dkr.ecr.us-east-1.amazonaws.com/tb-ecr-repo:1266ba777b1a1fede2dfa5581f1a1d843528185e
           ports:
             - containerPort: 8080
